@@ -1,0 +1,4 @@
+*.exe
+*.bf
+!helloworld.bf
+!*.c
