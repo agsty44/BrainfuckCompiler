@@ -88,8 +88,9 @@ void decoder(char currentInstruction) {
             instructionPointer = loopStart - 1; //go back to the start of the loop.
             break;
         
-        case ',': //input a char. do later.
-            
+        case ',': //input a char.
+            char userInput = getchar();
+            memory[memoryPointer] = userInput;
             break;
         
         case '.': //output a char.
