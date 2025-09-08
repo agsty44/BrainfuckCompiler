@@ -175,6 +175,14 @@ int main(int argc, char * argv[]) {
         return 1;
     }
 
+    int lengthOfSrcFileName = strlen(argv[2]);
+
+    //Check ends with .bf
+    if (lengthOfSrcFileName < 3 || strcmp(&argv[2][lengthOfSrcFileName - 3], ".bf") != 0) {
+        printf("Filename must end with .bf");
+        return 1;
+    }
+
     //read the first 20000 chars.
     fgets(brainfuckCode, 20000, fptr);
     bracketCheck();
@@ -185,31 +193,26 @@ int main(int argc, char * argv[]) {
 
 
         //create variables to store the name of the c output file and the bin file
-        int lengthOfSrcFileName = strlen(argv[2]);
 
-        char cFileName[lengthOfSrcFileName];
-        char binaryFileName[lengthOfSrcFileName + 8];
+        char cFileName[lengthOfSrcFileName]; //same length - replace last 2 chars
+        char binaryFileName[lengthOfSrcFileName + 4]; // +2 for 'e' and '\0'
 
-        strcpy(cFileName, argv[2]);
-        strcpy(binaryFileName, argv[2]);
+        strcpy(cFileName, argv[2]); //copy og filenames
 
         //turn .bf to .c
         cFileName[strlen(cFileName) - 2] = 'c';
         cFileName[strlen(cFileName) - 1] = '\0';
         
-        //turn .bf to .exe CURRENTLY BROKEN
-        binaryFileName[strlen(binaryFileName) - 4] = '.'; 
-        binaryFileName[strlen(binaryFileName) - 3] = 'e';
-        binaryFileName[strlen(binaryFileName) - 2] = 'x';
-        binaryFileName[strlen(binaryFileName) - 1] = 'e'; 
-        binaryFileName[strlen(binaryFileName) - 0] = '\0'; //redundant -0 for formatting
+        //turn .bf to .exe
+        //recopy the filename up to '.'
+        memcpy(binaryFileName, argv[2], lengthOfSrcFileName - 2);
+        binaryFileName[lengthOfSrcFileName - 2] = 'e';
+        binaryFileName[lengthOfSrcFileName - 1] = 'x';
+        binaryFileName[lengthOfSrcFileName - 0] = 'e';
+        binaryFileName[lengthOfSrcFileName + 1] = '\0';
 
         printf("%s, %s", cFileName, binaryFileName);
         return 0;
-
-        //i dont know a cleaner way to do this in C.
-        //add ".c" to the cfilename:
-
 
         while (brainfuckCode[instructionPointer] != '\0') {
             compileToC(brainfuckCode[instructionPointer]);
