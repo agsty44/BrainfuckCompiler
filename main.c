@@ -100,7 +100,7 @@ void decoderInterpreted(char currentInstruction) {
     }
 }
 
-void compileToC(char currentInstruction) {
+void compileToC(char currentInstruction) { //TODO - REPLACE INTERPRETER INSTRUCTIONS WITH OUTPUT TO A FILE, WHICH IS THEN COMPILED BY GCC.
     if (mustExitLoop == 1 && currentInstruction != ']') {
         return;
     }
