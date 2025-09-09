@@ -108,19 +108,19 @@ void compileToC(char currentInstruction) {
 
     switch(currentInstruction) {
         case '>':
-            fprintf(outputptr, "if (mustExitLoop == 0) {memoryPointer++; if (memoryPointer >= 30000) {memoryPointer = 0;}}\n");
+            fprintf(outputptr, "memoryPointer++; if (memoryPointer >= 30000) {memoryPointer = 0;}\n");
             break;
         
         case '<': //Decrement memory pointer - if it underflows, set to 29999
-            fprintf(outputptr, "if (mustExitLoop == 0) {memoryPointer--; if (memoryPointer < 0) {memoryPointer = 29999;}}\n");
+            fprintf(outputptr, "memoryPointer--; if (memoryPointer < 0) {memoryPointer = 29999;}\n");
             break;
         
         case '+':
-            fprintf(outputptr, "if (mustExitLoop == 0) {memory[memoryPointer]++;}\n");
+            fprintf(outputptr, "memory[memoryPointer]++;\n");
             break;
         
         case '-': //Decrement the stored value by 1
-            fprintf(outputptr, "if (mustExitLoop == 0) {memory[memoryPointer]--;}\n");
+            fprintf(outputptr, "memory[memoryPointer]--;\n");
             break;
         
         case '[':
@@ -132,11 +132,11 @@ void compileToC(char currentInstruction) {
             break;
         
         case ',': //input a char.
-            fprintf(outputptr, "if (mustExitLoop == 0) {char userInput = getchar();\nmemory[memoryPointer] = userInput;}\n");
+            fprintf(outputptr, "char userInput = getchar();\nmemory[memoryPointer] = userInput;\n");
             break;
         
         case '.': //output a char.
-            fprintf(outputptr, "if (mustExitLoop == 0) {printf(\"%%c\", (char)(memory[memoryPointer]));}\n");
+            fprintf(outputptr, "printf(\"%%c\", (char)(memory[memoryPointer]));\n");
             break;
     }
 }
