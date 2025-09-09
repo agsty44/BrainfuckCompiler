@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 char brainfuckCode[20000];
 int memory[30000];
@@ -201,22 +202,30 @@ int main(int argc, char * argv[]) {
 
         //prep new file
 
-        outputptr = fopen(cFileName, "a");
+        outputptr = fopen(cFileName, "a"); //precursor code
         fprintf(outputptr, "#include <stdio.h>\n");
         fprintf(outputptr, "int memory[30000];\n");
         fprintf(outputptr, "int memoryPointer = 0;\n");
-        fprintf(outputptr, "int loopStart;\n");
-        fprintf(outputptr, "int mustExitLoop = 0;\n");
         fprintf(outputptr, "int main() {\n");
 
         while (brainfuckCode[instructionPointer] != '\0') {
             compileToC(brainfuckCode[instructionPointer]);
             instructionPointer++;
-        }
+        } //write the lines of code to the file
 
-        fprintf(outputptr, "return 0;\n}");
+        fprintf(outputptr, "return 0;\n}"); //close loop and tidy up
 
         //exec gcc command here.
+
+        char consoleCommand[lengthOfSrcFileName * 4];
+
+        strcpy(consoleCommand, "gcc -o ");
+        strcat(consoleCommand, binaryFileName);
+        strcat(consoleCommand, " ");
+        strcat(consoleCommand, cFileName);
+
+        system(consoleCommand);
+
         return 0;
 
     } else if (strcmp(argv[1], "interpret") != 0) { //if it isnt compile and isnt interpret, then its wrong
