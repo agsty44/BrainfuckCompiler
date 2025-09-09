@@ -8,6 +8,8 @@ int instructionPointer = 0;
 int loopStart;
 int mustExitLoop;
 
+FILE *outputptr;
+
 int bracketCheck() {
     int leftBrace = 0;
     int rightBrace = 0;
@@ -100,66 +102,41 @@ void decoderInterpreted(char currentInstruction) {
     }
 }
 
-void compileToC(char currentInstruction) { //TODO - REPLACE INTERPRETER INSTRUCTIONS WITH OUTPUT TO A FILE, WHICH IS THEN COMPILED BY GCC.
+void compileToC(char currentInstruction) {
     if (mustExitLoop == 1 && currentInstruction != ']') {
-        return;
-    }
+        return;}
 
     switch(currentInstruction) {
-        case '>': //Increment the memory pointer by 1 - if it overflows, set it to 0
-            memoryPointer++;
-
-            if (memoryPointer >= 30000) {
-                memoryPointer = 0;
-            }
-
+        case '>':
+            fprintf(outputptr, "if (mustExitLoop == 0) {memoryPointer++; if (memoryPointer >= 30000) {memoryPointer = 0;}}\n");
             break;
         
         case '<': //Decrement memory pointer - if it underflows, set to 29999
-            memoryPointer--;
-
-            if (memoryPointer < 0) {
-                memoryPointer = 29999;
-            }
-
+            fprintf(outputptr, "if (mustExitLoop == 0) {memoryPointer--; if (memoryPointer < 0) {memoryPointer = 29999;}}\n");
             break;
         
-        case '+': //Increment the value stored at the address by 1
-            memory[memoryPointer]++;
+        case '+':
+            fprintf(outputptr, "if (mustExitLoop == 0) {memory[memoryPointer]++;}\n");
             break;
         
         case '-': //Decrement the stored value by 1
-            memory[memoryPointer]--;
+            fprintf(outputptr, "if (mustExitLoop == 0) {memory[memoryPointer]--;}\n");
             break;
         
-        case '[': //Start / check loops: loop condition is if the value at the pointers current address is NOT 0.
-            if (memory[memoryPointer] == 0) {
-                mustExitLoop = 1;
-                break; //set this to exit the loop. all instructions will be skipped until the ] is reached.
-            }
-
-            loopStart = instructionPointer; //remember this position.
-            
+        case '[':
+            fprintf(outputptr, "while (memory[memoryPointer] != 0) {\n");
             break;
         
         case ']':
-            //if we need to exit the loop:
-            if (mustExitLoop == 1) {
-                mustExitLoop = 0;
-                break;
-            }
-
-            //if we dont want to exit:
-            instructionPointer = loopStart - 1; //go back to the start of the loop.
+            fprintf(outputptr, "}\n");
             break;
         
         case ',': //input a char.
-            char userInput = getchar();
-            memory[memoryPointer] = userInput;
+            fprintf(outputptr, "if (mustExitLoop == 0) {char userInput = getchar();\nmemory[memoryPointer] = userInput;}\n");
             break;
         
         case '.': //output a char.
-            printf("%c", (char)(memory[memoryPointer]));
+            fprintf(outputptr, "if (mustExitLoop == 0) {printf(\"%%c\", (char)(memory[memoryPointer]));}\n");
             break;
     }
 }
@@ -191,7 +168,6 @@ int main(int argc, char * argv[]) {
     if (strcmp(argv[1], "compile") == 0) { //if its compile, we compile
         //do compiling here
 
-
         //create variables to store the name of the c output file and the bin file
 
         char cFileName[lengthOfSrcFileName]; //same length - replace last 2 chars
@@ -205,21 +181,44 @@ int main(int argc, char * argv[]) {
         
         //turn .bf to .exe
         //recopy the filename up to '.'
-        memcpy(binaryFileName, argv[2], lengthOfSrcFileName - 2);
-        binaryFileName[lengthOfSrcFileName - 2] = 'e';
-        binaryFileName[lengthOfSrcFileName - 1] = 'x';
-        binaryFileName[lengthOfSrcFileName - 0] = 'e';
-        binaryFileName[lengthOfSrcFileName + 1] = '\0';
+        #ifdef _WIN32
+            memcpy(binaryFileName, argv[2], lengthOfSrcFileName - 2);
+            binaryFileName[lengthOfSrcFileName - 2] = 'e';
+            binaryFileName[lengthOfSrcFileName - 1] = 'x';
+            binaryFileName[lengthOfSrcFileName - 0] = 'e';
+            binaryFileName[lengthOfSrcFileName + 1] = '\0';
+        #endif
 
-        printf("%s, %s", cFileName, binaryFileName);
-        return 0;
+        #ifdef __linux__
+            memcpy(binaryFileName, argv[2], lengthOfSrcFileName - 3);
+        #endif
+
+        //prep the c file for writing by scrubbing the file which already exists.
+
+        outputptr = fopen(cFileName, "w");
+        fprintf(outputptr, "");
+        fclose(outputptr);
+
+        //prep new file
+
+        outputptr = fopen(cFileName, "a");
+        fprintf(outputptr, "#include <stdio.h>\n");
+        fprintf(outputptr, "int memory[30000];\n");
+        fprintf(outputptr, "int memoryPointer = 0;\n");
+        fprintf(outputptr, "int loopStart;\n");
+        fprintf(outputptr, "int mustExitLoop = 0;\n");
+        fprintf(outputptr, "int main() {\n");
 
         while (brainfuckCode[instructionPointer] != '\0') {
             compileToC(brainfuckCode[instructionPointer]);
             instructionPointer++;
         }
 
+        fprintf(outputptr, "return 0;\n}");
+
+        //exec gcc command here.
         return 0;
+
     } else if (strcmp(argv[1], "interpret") != 0) { //if it isnt compile and isnt interpret, then its wrong
         printf("Argument 1 must be \"compile\" or \"interpret\"");
         return 1;
