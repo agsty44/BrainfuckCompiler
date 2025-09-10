@@ -192,6 +192,7 @@ int main(int argc, char * argv[]) {
 
         #ifdef __linux__
             memcpy(binaryFileName, argv[2], lengthOfSrcFileName - 3);
+            binaryFileName[lengthOfSrcFileName - 3] = '\0';
         #endif
 
         //prep the c file for writing by scrubbing the file which already exists.
@@ -214,6 +215,8 @@ int main(int argc, char * argv[]) {
         } //write the lines of code to the file
 
         fprintf(outputptr, "return 0;\n}"); //close loop and tidy up
+
+        fclose(outputptr); //CLOSE THE FILE - OTHERWISE THE COMPILER CANNOT FIND ANYTHING
 
         //exec gcc command here.
 
