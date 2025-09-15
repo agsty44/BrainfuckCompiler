@@ -1,4 +1,7 @@
 *.exe
+*
 *.bf
 !helloworld.bf
-!*.c
+!main.c
+!Makefile
+!README.md
